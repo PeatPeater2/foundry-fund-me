@@ -24,7 +24,10 @@ contract FundMe {
     // records the amount funded against their address, and adds them to the funders list
     function fund() public payable {
         // 1. Reverts if the sent ETH value is less than the minimum USD amount
-        require(msg.value.getConversionRate(s_priceFeed) >= MINIMUM_USD, "You need to spend more ETH!");
+        require(
+            msg.value.getConversionRate(s_priceFeed) >= MINIMUM_USD,
+            "You need to spend more ETH!"
+        );
         //2. adding amount to the address of person
         s_addressToAmountFunded[msg.sender] += msg.value;
         //3. Adds the funder's address to the funders list
@@ -46,11 +49,9 @@ contract FundMe {
         for (
             uint256 funderIndex = 0; // start from position 0 (first funder)
             funderIndex < s_funders.length;
-
             // keep going until you reach the last funder
-            funderIndex++
-        )  // move to the next funder each time
-        {
+            funderIndex++ // move to the next funder each time
+        ) {
             //3. Get the funder address at the current index
             address funder = s_funders[funderIndex];
             //4. Reset the funder's funded balance back to zero
@@ -59,15 +60,10 @@ contract FundMe {
         //5. Clear the funders list by replacing it with a new empty array
         s_funders = new address[](0);
 
-        // // transfer
-        // payable(msg.sender).transfer(address(this).balance);
-
-        // // send
-        // bool sendSuccess = payable(msg.sender).send(address(this).balance);
-        // require(sendSuccess, "Send failed");
-
         // call
-        (bool callSuccess,) = payable(msg.sender).call{value: address(this).balance}("");
+        (bool callSuccess, ) = payable(msg.sender).call{
+            value: address(this).balance
+        }("");
         require(callSuccess, "Call failed");
     }
 
@@ -80,7 +76,9 @@ contract FundMe {
     }
 
     // Returns the total amount funded by a specific address from the mapping
-    function getAddressToAmountFunded(address fundingAddress) external view returns (uint256) {
+    function getAddressToAmountFunded(
+        address fundingAddress
+    ) external view returns (uint256) {
         return s_addressToAmountFunded[fundingAddress];
     }
 
@@ -93,20 +91,3 @@ contract FundMe {
         return i_owner;
     }
 }
-
-// See s_ → it's saved on chain → expensive
-// See i_ → immutable → cheaper
-// See CAPS → constant → cheapest
-
-// The Two Types That ALWAYS Need memory or storage declared
-// 1. Complex Types: string, struct, array, bytes.--- ALWAYS NEED it
-// 2. Simple types: uint256, address, bool ----— NEVER NEED it.
-
-// Concepts we didn't cover yet (will cover in later sections)
-// 1. Enum
-// 2. Events
-// 3. Try / Catch
-// 4. Function Selector
-// 5. abi.encode / decode
-// 6. Hash with keccak256
-// 7. Yul / Assembly

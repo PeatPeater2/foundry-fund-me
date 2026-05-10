@@ -17,9 +17,3 @@ contract DeployFundMe is Script {
         return fundMe;
     }
 }
-// FundMe/Foundry-FundMe-26/script/DeployFundMe.s.sol
-// FundMe/Foundry-FundMe-26/script/HelperConfig.s.sol
-// FundMe/Foundry-FundMe-26/test/Mocks/MocksV3Aggregator.sol
-// FundMe/Foundry-FundMe-26/test/FundmeTest.t.sol
-// FundMe/Foundry-FundMe-26/src/FundMe.sol
-// FundMe/Foundry-FundMe-26/script/DeployFundMe.s.sol

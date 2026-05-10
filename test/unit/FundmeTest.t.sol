@@ -89,42 +89,20 @@ contract FundMeTest is Test {
         uint256 endingOwnerBalance = fundMe.getOwner().balance;
         uint256 endingFundMeBalance = address(fundMe).balance;
         assertEq(endingFundMeBalance, 0);
-        assertEq(endingOwnerBalance, startingOwnerBalance + startingFundMeBalance);
+        assertEq(
+            endingOwnerBalance,
+            startingOwnerBalance + startingFundMeBalance
+        );
     }
-
-    // function testWithdrawFromMultipleFunders() public fundingModifier {
-    //     // ----------- Arrange -----------
-    //     uint160 numberOfFunders = 10;
-    //     uint160 startingFunderIndex = 1;
-
-    //     for (uint160 i = startingFunderIndex; i < numberOfFunders; i++) {
-    //         hoax(address(i), SEND_VALUE);
-    //         fundMe.fund{value: SEND_VALUE}();
-    //     }
-    //     uint256 startingFundMeBalance = address(fundMe).balance;
-    //     uint256 startingOwnerBalance = fundMe.getOwner().balance;
-
-    //     // ----------- Act -----------
-    //     vm.startPrank(fundMe.getOwner());
-    //     fundMe.withdraw();
-    //     vm.stopPrank();
-
-    //     // ----------- Assert -----------
-    //     uint256 endingOwnerBalance = fundMe.getOwner().balance;
-    //     uint256 endingFundMeBalance = address(fundMe).balance;
-
-    //     assertEq(endingFundMeBalance, 0);
-
-    //     assertEq(
-    //         endingOwnerBalance,
-    //         startingOwnerBalance + startingFundMeBalance
-    //     );
-    // }
 
     function testWithdrawFromMultipleFunders() public fundingModifier {
         uint160 numberOfFunders = 10;
         uint160 startingFunderIndex = 1;
-        for (uint160 i = startingFunderIndex; i < numberOfFunders + startingFunderIndex; i++) {
+        for (
+            uint160 i = startingFunderIndex;
+            i < numberOfFunders + startingFunderIndex;
+            i++
+        ) {
             // we get hoax from stdcheats
             // hoax = prank + deal
             hoax(address(i), SEND_VALUE);
@@ -136,15 +114,21 @@ contract FundMeTest is Test {
         fundMe.withdraw();
         vm.stopPrank();
         assert(address(fundMe).balance == 0);
-        assert(startingFundMeBalance + startingOwnerBalance == fundMe.getOwner().balance);
-        assert((numberOfFunders + 1) * SEND_VALUE == fundMe.getOwner().balance - startingOwnerBalance);
+        assert(
+            startingFundMeBalance + startingOwnerBalance ==
+                fundMe.getOwner().balance
+        );
+        assert(
+            (numberOfFunders + 1) * SEND_VALUE ==
+                fundMe.getOwner().balance - startingOwnerBalance
+        );
     }
 
     // THESE LAST TESTS no clear yet
     function testReceiveTriggersFund() public {
         vm.prank(USER);
         vm.deal(USER, SEND_VALUE);
-        (bool success,) = address(fundMe).call{value: SEND_VALUE}("");
+        (bool success, ) = address(fundMe).call{value: SEND_VALUE}("");
         assertTrue(success);
         assertEq(fundMe.getAddressToAmountFunded(USER), SEND_VALUE);
     }
@@ -152,7 +136,9 @@ contract FundMeTest is Test {
     function testFallbackTriggersFund() public {
         vm.prank(USER);
         vm.deal(USER, SEND_VALUE);
-        (bool success,) = address(fundMe).call{value: SEND_VALUE}(abi.encodeWithSignature("nonExistentFunction()"));
+        (bool success, ) = address(fundMe).call{value: SEND_VALUE}(
+            abi.encodeWithSignature("nonExistentFunction()")
+        );
         assertTrue(success);
         assertEq(fundMe.getAddressToAmountFunded(USER), SEND_VALUE);
     }
@@ -163,104 +149,3 @@ contract FundMeTest is Test {
         assertEq(fundMe.getAddressToAmountFunded(USER), 0);
     }
 }
-
-// pranking  pattern
-// address ALICE = makeAddr("alice");
-// vm.prank(ALICE);
-// fundMe.fund{value: 1 ether}();
-
-// Let me break every line down.
-
-// ---
-
-// ## Line 1 — At the top of the contract
-
-// ```solidity
-// contract FundMeTest is Test {
-//     FundMe fundMe; // ← declared here
-// ```
-
-// This declares `fundMe` as a **state variable** of the test contract. It's empty right now — just a box with nothing in it yet.
-
-// Why here and not inside `setUp`? Because **every test function needs access to it.** If you declared it inside `setUp`, only `setUp` could see it. Declaring it at the top means ALL functions can see it.
-
-// ```
-// FundMe fundMe;  ← empty box, visible to everyone in this contract
-// ```
-
-// ---
-
-// ## Line 2 — Inside `setUp()`
-
-// ```solidity
-// DeployFundMe deployFundMe = new DeployFundMe();
-// ```
-
-// Creates a fresh `DeployFundMe` script. Just like how you'd run it on the command line — but here Forge runs it for you inside the test.
-
-// ```
-// new DeployFundMe() → fires DeployFundMe's constructor → ready to use
-// ```
-
-// ---
-
-// ## Line 3 — The hand-off
-
-// ```solidity
-// fundMe = deployFundMe.run();
-// ```
-
-// Calls `run()` which triggers the entire deployment chain:
-
-// ```
-// run() fires
-//   → HelperConfig constructor fires
-//   → Mock deploys (Anvil) or real address returned (Sepolia)
-//   → FundMe deploys with that address
-//   → returns the deployed FundMe
-//         ↓
-// fundMe = that returned FundMe ← now the box has something in it
-// ```
-
-// ---
-
-// ## Why `setUp()` specifically?
-
-// Forge runs `setUp()` **automatically before every single test.** So every test starts with a fresh, clean FundMe.
-
-// ```
-// setUp() runs → fresh FundMe
-// testMinimumUsdIsFive() runs
-// setUp() runs → fresh FundMe again
-// testFundFailsWithoutEnoughETH() runs
-// setUp() runs → fresh FundMe again
-// testIOwnerisMsgSender() runs
-// ```
-
-// ---
-
-// ## Now why your assert lines construct the way they do
-
-// ```solidity
-// function testMinimumUsdIsFive() public view {
-//     assertEq(fundMe.MINIMUM_USD(), 5e18);
-// //           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-// //           fundMe exists because setUp() already ran and filled that box
-// }
-// ```
-
-// If `fundMe` was never filled in `setUp()`, calling `fundMe.MINIMUM_USD()` would crash — you'd be calling a function on an empty box.
-
-// **`setUp()` fills the box. Your tests use the box.** That's the entire relationship.
-
-// ---
-
-// ## Full picture
-
-// ```
-// state variable → empty box declared, visible to all tests
-//      ↓
-// setUp()        → fills the box with a real deployed FundMe
-//      ↓
-// test functions → use fundMe.anything() confidently knowing it exists
-// ```
