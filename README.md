@@ -66,4 +66,4 @@ make deploy-sepolia
 - Foundry testing and scripting
 - Deployment automation using Makefile
 
-> This project is for learning purposes and demonstrates a basic crowdfunding mechanism in Web3.
+This project is for learning purposes and demonstrates a basic crowdfunding mechanism in Web3.
