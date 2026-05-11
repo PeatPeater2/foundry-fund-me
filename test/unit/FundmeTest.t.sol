@@ -89,20 +89,13 @@ contract FundMeTest is Test {
         uint256 endingOwnerBalance = fundMe.getOwner().balance;
         uint256 endingFundMeBalance = address(fundMe).balance;
         assertEq(endingFundMeBalance, 0);
-        assertEq(
-            endingOwnerBalance,
-            startingOwnerBalance + startingFundMeBalance
-        );
+        assertEq(endingOwnerBalance, startingOwnerBalance + startingFundMeBalance);
     }
 
     function testWithdrawFromMultipleFunders() public fundingModifier {
         uint160 numberOfFunders = 10;
         uint160 startingFunderIndex = 1;
-        for (
-            uint160 i = startingFunderIndex;
-            i < numberOfFunders + startingFunderIndex;
-            i++
-        ) {
+        for (uint160 i = startingFunderIndex; i < numberOfFunders + startingFunderIndex; i++) {
             // we get hoax from stdcheats
             // hoax = prank + deal
             hoax(address(i), SEND_VALUE);
@@ -114,21 +107,15 @@ contract FundMeTest is Test {
         fundMe.withdraw();
         vm.stopPrank();
         assert(address(fundMe).balance == 0);
-        assert(
-            startingFundMeBalance + startingOwnerBalance ==
-                fundMe.getOwner().balance
-        );
-        assert(
-            (numberOfFunders + 1) * SEND_VALUE ==
-                fundMe.getOwner().balance - startingOwnerBalance
-        );
+        assert(startingFundMeBalance + startingOwnerBalance == fundMe.getOwner().balance);
+        assert((numberOfFunders + 1) * SEND_VALUE == fundMe.getOwner().balance - startingOwnerBalance);
     }
 
     // THESE LAST TESTS no clear yet
     function testReceiveTriggersFund() public {
         vm.prank(USER);
         vm.deal(USER, SEND_VALUE);
-        (bool success, ) = address(fundMe).call{value: SEND_VALUE}("");
+        (bool success,) = address(fundMe).call{value: SEND_VALUE}("");
         assertTrue(success);
         assertEq(fundMe.getAddressToAmountFunded(USER), SEND_VALUE);
     }
@@ -136,9 +123,7 @@ contract FundMeTest is Test {
     function testFallbackTriggersFund() public {
         vm.prank(USER);
         vm.deal(USER, SEND_VALUE);
-        (bool success, ) = address(fundMe).call{value: SEND_VALUE}(
-            abi.encodeWithSignature("nonExistentFunction()")
-        );
+        (bool success,) = address(fundMe).call{value: SEND_VALUE}(abi.encodeWithSignature("nonExistentFunction()"));
         assertTrue(success);
         assertEq(fundMe.getAddressToAmountFunded(USER), SEND_VALUE);
     }

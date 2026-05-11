@@ -24,10 +24,7 @@ contract FundMe {
     // records the amount funded against their address, and adds them to the funders list
     function fund() public payable {
         // 1. Reverts if the sent ETH value is less than the minimum USD amount
-        require(
-            msg.value.getConversionRate(s_priceFeed) >= MINIMUM_USD,
-            "You need to spend more ETH!"
-        );
+        require(msg.value.getConversionRate(s_priceFeed) >= MINIMUM_USD, "You need to spend more ETH!");
         //2. adding amount to the address of person
         s_addressToAmountFunded[msg.sender] += msg.value;
         //3. Adds the funder's address to the funders list
@@ -49,9 +46,11 @@ contract FundMe {
         for (
             uint256 funderIndex = 0; // start from position 0 (first funder)
             funderIndex < s_funders.length;
+
             // keep going until you reach the last funder
-            funderIndex++ // move to the next funder each time
-        ) {
+            funderIndex++
+        )  // move to the next funder each time
+        {
             //3. Get the funder address at the current index
             address funder = s_funders[funderIndex];
             //4. Reset the funder's funded balance back to zero
@@ -61,9 +60,7 @@ contract FundMe {
         s_funders = new address[](0);
 
         // call
-        (bool callSuccess, ) = payable(msg.sender).call{
-            value: address(this).balance
-        }("");
+        (bool callSuccess,) = payable(msg.sender).call{value: address(this).balance}("");
         require(callSuccess, "Call failed");
     }
 
@@ -76,9 +73,7 @@ contract FundMe {
     }
 
     // Returns the total amount funded by a specific address from the mapping
-    function getAddressToAmountFunded(
-        address fundingAddress
-    ) external view returns (uint256) {
+    function getAddressToAmountFunded(address fundingAddress) external view returns (uint256) {
         return s_addressToAmountFunded[fundingAddress];
     }
 
